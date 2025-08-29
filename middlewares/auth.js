@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 const auth = (req, res, next) => {
   const jwt_secret = process.env.JWT_SECRET;
   const authHeader = req.headers.authorization;
-  console.log(authHeader)
 
   if (!authHeader) {
     return res.status(401).json({ message: "Token não fornecido" });
@@ -13,7 +12,6 @@ const auth = (req, res, next) => {
 
   const [scheme, token] = parts;
 
-  console.log(jwt_secret)
   try {
     const decoded = jwt.verify(token, jwt_secret);
     

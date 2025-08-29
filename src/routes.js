@@ -19,6 +19,6 @@ ticketsRoute.get('/:id', detailTicket)
 ticketsRoute.patch('/:id', patchTicket)
 ticketsRoute.post('/:id/status', updateTicket)
 ticketsRoute.delete('/:id', deleteTicket)
-ticketsRoute.get('/:id/comments', listComments)
-ticketsRoute.post('/:id/comments', createComments)
+ticketsRoute.get('/:ticketId/comments', listComments)
+ticketsRoute.post('/:ticketId/comments', createComments)
 

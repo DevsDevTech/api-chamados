@@ -26,7 +26,9 @@ export const createTicket = async (req, res) => {
   }
 };
 
+
 export const listTicket = async (req, res) => {
+
   try {
     const tickets = await Ticket.findAll();
     res.status(200).json({ tickets: tickets });
@@ -35,6 +37,7 @@ export const listTicket = async (req, res) => {
     res.status(500).json({ message: "Erro, tente novamente" });
   }
 };
+
 
 export const detailTicket = async (req, res) => {
   const ticketId = req.params.id;
@@ -54,6 +57,8 @@ export const detailTicket = async (req, res) => {
     return res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
+
+
 export const patchTicket = async (req, res) => {
   const ticketId = req.params.id;
   const data = req.body;
@@ -72,11 +77,41 @@ export const patchTicket = async (req, res) => {
     return res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
-export const updateTicket = (req, res) => {
+
+
+export const updateTicket = async (req, res) => {
+  const ticketId = req.params.id;
+  const data = req.body;
+
   try {
-  } catch (error) {}
+    const ticket = await Ticket.findByPk(ticketId);
+    console.log({ data: data });
+
+    await ticket.update(data);
+    return res.status(200).json(ticket);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro interno do servidor." });
+  }
 };
-export const deleteTicket = (req, res) => {
+
+
+export const deleteTicket = async (req, res) => {
+  const ticketId = req.params.id;
+  console.log(
+    `[DELETE] Recebida requisição para deletar ticket ID: ${ticketId}`
+  );
+
   try {
-  } catch (error) {}
+    const deletedTicket = await Ticket.destroy({
+      where: {
+        id: ticketId,
+      },
+    });
+
+    res.status(200).json({ message: "Ticket deletado!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro interno do servidor." });
+  }
 };

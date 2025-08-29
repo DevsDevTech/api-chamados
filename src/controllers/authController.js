@@ -58,7 +58,7 @@ export const loginUser = async (req, res) => {
     if (!isPassValid) {
       return res.status(401).json({ message: "Senha errada." });
     }
-
+ 
     const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "1h" });
 
     return res.status(200).json({ token: token });
