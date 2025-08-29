@@ -25,7 +25,6 @@ module.exports = {
       priority: {
         type: Sequelize.ENUM("low", "medium", "high"),
         allowNull: false,
-        defaultValue: "low",
       },
       created_by_id: {
         type: Sequelize.UUID,

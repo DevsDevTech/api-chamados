@@ -35,10 +35,9 @@ export const createUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-
     const { email, password } = req.body;
 
-    const jwt_secret = process.env.JWT_SECRET
+    const jwt_secret = process.env.JWT_SECRET;
 
     if (!email || !password) {
       return res
@@ -60,12 +59,9 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Senha errada." });
     }
 
-    const token = jwt.sign({id: user.id}, jwt_secret, {expiresIn: '1h'})
+    const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "1h" });
 
-    return res
-      .status(200)
-      .json(token);
-
+    return res.status(200).json({ token: token });
   } catch (err) {
     console.error(err);
 

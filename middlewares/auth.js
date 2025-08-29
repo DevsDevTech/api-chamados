@@ -1,17 +1,26 @@
 import jwt from "jsonwebtoken";
 
-const jwt_secret = process.env.JWT_SECRET;
-
 const auth = (req, res, next) => {
-  const token = req.headers.authorization;
+  const jwt_secret = process.env.JWT_SECRET;
+  const authHeader = req.headers.authorization;
+  console.log(authHeader)
 
-  if (!token) {
-    return res.status(401).json({ message: "Pah, acesso negado" });
+  if (!authHeader) {
+    return res.status(401).json({ message: "Token não fornecido" });
   }
 
+  const parts = authHeader.split(" ");
+
+  const [scheme, token] = parts;
+
+  console.log(jwt_secret)
   try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''));
+    const decoded = jwt.verify(token, jwt_secret);
+    
+    req.userId = decoded.id;
+    return next();
   } catch (error) {
+
     return res.status(401).json({ message: "Token inválido" });
   }
 

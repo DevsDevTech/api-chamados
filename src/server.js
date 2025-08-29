@@ -5,7 +5,7 @@ import { authRoute, usersRoute, ticketsRoute } from "./routes.js";
 import Sequelize from "sequelize";
 import config from "./config/database.cjs";
 import auth from "../middlewares/auth.js";
-
+import cors from 'cors'
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
@@ -13,6 +13,7 @@ const db = require("./models/index.cjs");
 
 const app = express();
 app.use(express.json());
+app.use(cors())
 
 app.use("/auth", authRoute);
 app.use("/users", auth, usersRoute);

@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       assigneeId: {
         type: DataTypes.UUID,
         allowNull: true,
-        field: "assignee_id", // Mapeia para a coluna snake_case no banco
+        field: "assignee_id", 
       },
     },
     {
