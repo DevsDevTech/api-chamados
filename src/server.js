@@ -4,8 +4,7 @@ import express from "express";
 import { authRoute, usersRoute, ticketsRoute } from "./routes.js";
 import Sequelize from "sequelize";
 import config from "./config/database.cjs";
-import auth from "../middlewares/auth.js";
-import cors from 'cors'
+import cors from 'cors';
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
@@ -16,8 +15,8 @@ app.use(express.json());
 app.use(cors())
 
 app.use("/auth", authRoute);
-app.use("/users", auth, usersRoute);
-app.use("/tickets", auth, ticketsRoute);
+app.use("/users", usersRoute);
+app.use("/tickets", ticketsRoute);
 
 db.sequelize
   .authenticate()
