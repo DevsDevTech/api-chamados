@@ -12,9 +12,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "assigneeId",
         as: "assignee",
       });
-      this.hasMany(models.Comment, { 
-        foreignKey: "ticketId", 
-        as: "comments" 
+      this.hasMany(models.Comment, {
+        foreignKey: "ticketId",
+        as: "comments",
+      });
+      this.hasMany(models.File, {
+        foreignKey: "ticketId",
+        as: "files",
       });
     }
   }
@@ -36,9 +40,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM("open", "in_progress", "resolved", "closed"),
+        type: DataTypes.ENUM("aberto", "em_andamento", "fechado"),
         allowNull: false,
-        defaultValue: "open",
+        defaultValue: "aberto",
       },
       priority: {
         type: DataTypes.ENUM("low", "medium", "high"),
@@ -53,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
       assigneeId: {
         type: DataTypes.UUID,
         allowNull: true,
-        field: "assignee_id", 
+        field: "assignee_id",
       },
     },
     {

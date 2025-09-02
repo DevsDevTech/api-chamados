@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("tickets", {
+    await queryInterface.createTable("Tickets", {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -18,19 +18,26 @@ module.exports = {
         allowNull: true,
       },
       status: {
-        type: Sequelize.ENUM("open", "in progress", "resolved", "closed"),
+        type: Sequelize.ENUM("aberto", "em_andamento", ""),
         allowNull: false,
-        defaultValue: "open",
+        defaultValue: "aberto",
       },
       priority: {
         type: Sequelize.ENUM("low", "medium", "high"),
         allowNull: false,
       },
+      files: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        key: Sequelize.STRING,
+        fileSize: Sequelize.INTEGER,
+        contentType: Sequelize.STRING
+      },
       created_by_id: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: "users",
+          model: "Users",
           key: "id",
         },
         onUpdate: "CASCADE",
@@ -40,7 +47,7 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
-          model: "users",
+          model: "Users",
           key: "id",
         },
         onUpdate: "CASCADE",

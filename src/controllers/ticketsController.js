@@ -1,26 +1,54 @@
 import db from "../models/index.cjs";
 
 const Ticket = db.Ticket;
-const User = db.User;
+const File = db.File;
 
 export const createTicket = async (req, res) => {
   try {
+    const { files } = req.body;
+
     if (!req.body.title) {
       return res.status(400).json({ message: "O título é obrigatório." });
     }
 
-    const ticketToCreate = {
+    if (files && files.length > 3) {
+      return res
+        .status(400)
+        .json({ message: "É permitido apenas 3 fotos por ticket" });
+    }
+
+    const newTicket = {
       title: req.body.title,
       description: req.body.description,
       status: req.body.status,
       priority: req.body.priority,
+      files: req.body.files,
       createdById: req.user.id,
       assigneeId: req.body.assigneeId,
     };
 
-    const newTicket = await Ticket.create(ticketToCreate);
-    console.log({ ticketId: req.ticketId });
-    res.status(201).json(newTicket);
+    if (
+      ticketToCreate.status !== "aberto" &&
+      ticketToCreate.status !== "em_andamento" &&
+      ticketToCreate.status !== "fechado"
+    ) {
+      res.status(400).json({ message: "Tente um status válido" });
+    }
+
+    if (files && Array.isArray(files) && files.length > 0) {
+      const filesToCreate = files.map((file) => ({
+        ...file,
+        ticketId: newTicket.id,
+      }));
+
+      await File.bulkCreate(filesToCreate);
+    }
+
+    const finalTicket = await Ticket.findByPk(newTicket.id, {
+      include: ["files"],
+    });
+
+    return res.status(201).json(finalTicket);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro, tente novamente" });
@@ -59,7 +87,7 @@ export const listTicket = async (req, res) => {
         prev_page_url: page - 1 >= 1 ? page - 1 : null,
         next_page_url: page + 1 > lastPage ? lastPage : page + 1,
         lastPage,
-        total: countTicket
+        total: countTicket,
       };
       res.status(200).json({ tickets: tickets, pagination: pagination });
     } catch (err) {
@@ -77,9 +105,10 @@ export const listTicket = async (req, res) => {
         path: "/tickets",
         page,
         prev_page_url: page - 1 >= 1 ? page - 1 : null,
-        next_page_url: Number(page) + Number(1) > lastPage ? null : Number(page) + 1,
+        next_page_url:
+          Number(page) + Number(1) > lastPage ? null : Number(page) + 1,
         lastPage,
-        total: countTicket
+        total: countTicket,
       };
       res.status(200).json({ tickets: tickets, pagination: pagination });
     } catch (err) {
@@ -140,7 +169,14 @@ export const updateTicket = async (req, res) => {
 
   try {
     const ticket = await Ticket.findByPk(ticketId);
-    console.log({ data: data });
+
+    if (
+      ticket.status !== "aberto" &&
+      ticket.status.trim() !== "em_andamento" &&
+      ticket.status !== "fechado"
+    ) {
+      res.status(400).json({ message: "Atualize para um status válido" });
+    }
 
     await ticket.update(data);
     return res.status(200).json(ticket);
@@ -167,5 +203,51 @@ export const deleteTicket = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Erro interno do servidor." });
+  }
+};
+
+export const statusTickets = async (req, res) => {
+  const { page = 1 } = req.query;
+
+  const limit = 15;
+
+  let lastPage = 1;
+
+  const countTicket = await Ticket.count();
+
+  if (countTicket !== 0) {
+    lastPage = Math.ceil(countTicket / limit);
+  } else {
+    return res.status(400).json({ message: "Nenhum ticket encontrado." });
+  }
+
+  try {
+    const tickets = await Ticket.findAll({
+      order: [["created_at", "DESC"]],
+      offset: Number(page * limit - limit),
+      limit: limit,
+    });
+
+    const statusTickets = tickets.map((ticket) => {
+      return {
+        id: ticket.id,
+        status: ticket.status,
+        created_at: ticket.created_at,
+      };
+    });
+
+    let pagination = {
+      path: "/tickets",
+      page,
+      prev_page_url: page - 1 >= 1 ? page - 1 : null,
+      next_page_url:
+        Number(page) + Number(1) > lastPage ? null : Number(page) + 1,
+      lastPage,
+      total: countTicket,
+    };
+    res.status(200).json({ tickets: statusTickets, pagination: pagination });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro, tente novamente" });
   }
 };

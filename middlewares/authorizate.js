@@ -1,6 +1,8 @@
+
 import jwt from "jsonwebtoken";
 import db from "../src/models/index.cjs";
 const User = db.User;
+
 
 const authorize = (allowedRoles) => {
   return async (req, res, next) => {
@@ -12,6 +14,12 @@ const authorize = (allowedRoles) => {
     }
     const parts = authHeader.split(" ");
     const token = parts[1];
+
+    const isTokenInvalid = await db.InvalidatedToken.findOne({ where: { token }})
+
+    if (isTokenInvalid) {
+      return res.status(401).json({ message: "Erro, Faça login novamente" });
+    }
 
     let decoded;
     try {
