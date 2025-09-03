@@ -29,10 +29,25 @@ module.exports = {
       },
       ticket_id: {
         type: Sequelize.UUID,
-        allowNull: false,
         references: { model: 'Tickets', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
+      },
+      comment_id: {
+        type: Sequelize.UUID,
+        references: { model: 'Comments', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "Users",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT",
       },
       created_at: {
         allowNull: false,

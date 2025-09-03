@@ -6,6 +6,7 @@ const File = db.File;
 export const createTicket = async (req, res) => {
   try {
     const { files } = req.body;
+    const user = req.user;
 
     if (!req.body.title) {
       return res.status(400).json({ message: "O título é obrigatório." });
@@ -28,23 +29,26 @@ export const createTicket = async (req, res) => {
     };
 
     if (
-      ticketToCreate.status !== "aberto" &&
-      ticketToCreate.status !== "em_andamento" &&
-      ticketToCreate.status !== "fechado"
+      newTicket.status !== "aberto" &&
+      newTicket.status !== "em_andamento" &&
+      newTicket.status !== "fechado"
     ) {
       res.status(400).json({ message: "Tente um status válido" });
     }
 
+    const createdTicket = await Ticket.create(newTicket);
+
     if (files && Array.isArray(files) && files.length > 0) {
       const filesToCreate = files.map((file) => ({
         ...file,
-        ticketId: newTicket.id,
+        ticketId: createdTicket.id,
+        userId: user.id
       }));
 
       await File.bulkCreate(filesToCreate);
     }
 
-    const finalTicket = await Ticket.findByPk(newTicket.id, {
+    const finalTicket = await Ticket.findByPk(createdTicket.id, {
       include: ["files"],
     });
 

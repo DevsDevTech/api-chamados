@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "authorId",
         as: "author",
       });
+
+      this.hasMany(models.File, {
+        foreignKey: "commentId",
+        as: "files",
+      });
     }
   }
 

@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "assigneeId",
         as: "assignedTickets",
       });
+      this.hasMany(models.File, {
+        foreignKey: "userId",
+        as: "files",
+      });
       this.hasMany(models.Comment, {
         foreignKey: "authorId",
         as: "comments",

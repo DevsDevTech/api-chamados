@@ -2,12 +2,14 @@ import db from "../models/index.cjs";
 
 const Comment = db.Comment;
 const Ticket = db.Ticket;
+const File = db.File;
 
 export const createComments = async (req, res) => {
   try {
     const ticketId = req.params.ticketId;
     const body = req.body.body;
     const user = req.user;
+    const { files } = req.body;
 
     const ticket = await Ticket.findByPk(ticketId);
     if (!ticket) {
@@ -16,6 +18,12 @@ export const createComments = async (req, res) => {
 
     if (user.role === "user" && ticket.createdById !== user.id) {
       return res.status(403).json({ message: "Sem permissão" });
+    }
+
+    if (files && files.length > 3) {
+      return res
+        .status(400)
+        .json({ message: "É permitido apenas 3 fotos por ticket" });
     }
 
     if (!body) {
@@ -27,10 +35,25 @@ export const createComments = async (req, res) => {
     const newComment = await Comment.create({
       ticketId: ticketId,
       authorId: user.id,
+      files: files,
       body: body,
     });
 
-    return res.status(201).json(newComment);
+    if (files && Array.isArray(files) && files.length > 0) {
+      const filesToCreate = files.map((file) => ({
+        ...file,
+        commentId: newComment.id,
+        userId: user.id
+      }));
+
+      await File.bulkCreate(filesToCreate);
+    }
+
+    const finalComment = await Comment.findByPk(newComment.id, {
+      include: ["files"],
+    });
+
+    return res.status(201).json(finalComment);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Erro, tente novamente" });
