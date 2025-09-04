@@ -2,6 +2,7 @@ import db from "../models/index.cjs";
 
 const Ticket = db.Ticket;
 const File = db.File;
+const User = db.User;
 
 export const createTicket = async (req, res) => {
   try {
@@ -42,7 +43,7 @@ export const createTicket = async (req, res) => {
       const filesToCreate = files.map((file) => ({
         ...file,
         ticketId: createdTicket.id,
-        userId: user.id
+        userId: user.id,
       }));
 
       await File.bulkCreate(filesToCreate);
@@ -64,7 +65,7 @@ export const listTicket = async (req, res) => {
   const user = req.user;
   const { page = 1 } = req.query;
 
-  const limit = 10;
+  const limit = 30;
 
   let lastPage = 1;
 
@@ -80,6 +81,13 @@ export const listTicket = async (req, res) => {
     try {
       const tickets = await Ticket.findAll({
         where: { createdById: userId },
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ["name", "email"],
+          },
+        ],
         order: [["created_at", "DESC"]],
         offset: Number(page * limit - limit),
         limit: limit,
@@ -102,6 +110,13 @@ export const listTicket = async (req, res) => {
     try {
       const tickets = await Ticket.findAll({
         order: [["created_at", "DESC"]],
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ["name", "email"],
+          },
+        ],
         offset: Number(page * limit - limit),
         limit: limit,
       });
