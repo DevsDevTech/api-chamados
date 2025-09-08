@@ -84,7 +84,7 @@ export const listTicket = async (req, res) => {
         include: [
           {
             model: User,
-            as: 'creator',
+            as: "creator",
             attributes: ["name", "email"],
           },
         ],
@@ -113,7 +113,7 @@ export const listTicket = async (req, res) => {
         include: [
           {
             model: User,
-            as: 'creator',
+            as: "creator",
             attributes: ["name", "email"],
           },
         ],
@@ -174,7 +174,9 @@ export const patchTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket não encontrado." });
     }
 
-    await ticket.update(data);
+    await ticket.update(data, {
+      fields: ["title", "description", "priority", "status"],
+    });
     return res.status(200).json(ticket);
   } catch (error) {
     console.error(error);

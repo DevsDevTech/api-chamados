@@ -3,6 +3,7 @@ import db from "../models/index.cjs";
 const Comment = db.Comment;
 const Ticket = db.Ticket;
 const File = db.File;
+const User = db.User;
 
 export const createComments = async (req, res) => {
   try {
@@ -43,7 +44,7 @@ export const createComments = async (req, res) => {
       const filesToCreate = files.map((file) => ({
         ...file,
         commentId: newComment.id,
-        userId: user.id
+        userId: user.id,
       }));
 
       await File.bulkCreate(filesToCreate);
@@ -74,9 +75,16 @@ export const listComments = async (req, res) => {
       return res.status(403).json({ message: "Sem permissão" });
     }
 
-    const comments = await Comment.findAll({ where: { ticketId: ticketId } });
-      res.status(200).json({ comments: comments });
-
+    const comments = await Comment.findAll({
+      where: { ticketId: ticketId },
+      include: {
+        model: User,
+        as: "author",
+        attributes: ["name", "id"],
+      },
+      order: [["created_at", "ASC"]]
+    });
+    res.status(200).json({ comments: comments });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro, tente novamente" });

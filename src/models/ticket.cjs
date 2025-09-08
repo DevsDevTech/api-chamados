@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: true,
         field: "assignee_id",
-      },
+      }
     },
     {
       sequelize,
