@@ -3,6 +3,7 @@ import {
   createUser,
   loginUser,
   logoutUser,
+  deleteUser
 } from "./controllers/authController.js";
 import { getUser, listUsers } from "./controllers/userController.js";
 import {
@@ -12,11 +13,12 @@ import {
   listTicket,
   patchTicket,
   updateTicket,
-  statusTickets,
+  statusTickets
 } from "./controllers/ticketsController.js";
 import {
   createComments,
   listComments,
+  deleteComment
 } from "./controllers/commentsController.js";
 import authorize from "../middlewares/authorizate.js";
 
@@ -28,6 +30,7 @@ export const ticketsRoute = express.Router();
 authRoute.post("/register", authorize(["admin"]), createUser);
 authRoute.post("/login", loginUser);
 authRoute.post("/logout", authorize(["user", "admin"]), logoutUser);
+authRoute.delete("/:id/delete", authorize(["admin"]), deleteUser);
 
 // USERS ROUTES
 usersRoute.get("/me", authorize(["user", "admin"]), getUser);
@@ -45,3 +48,4 @@ ticketsRoute.delete("/:id", authorize(["admin"]), deleteTicket);
 // COMMENTS ROUTES
 ticketsRoute.get("/:ticketId/comments",authorize(["user", "admin"]),listComments);
 ticketsRoute.post("/:ticketId/comments",authorize(["user", "admin"]),createComments);
+ticketsRoute.delete("/:id/comments",authorize(["user", "admin"]),deleteComment);

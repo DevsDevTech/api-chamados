@@ -2,8 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import { authRoute, usersRoute, ticketsRoute } from "./routes.js";
-import Sequelize from "sequelize";
-import config from "./config/database.cjs";
 import cors from 'cors';
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);

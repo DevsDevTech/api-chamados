@@ -90,3 +90,23 @@ export const listComments = async (req, res) => {
     res.status(500).json({ message: "Erro, tente novamente" });
   }
 };
+
+export const deleteComment = async (req, res) => {
+  const commentId = req.params.id
+  console.log(
+    `[DELETE] Recebida requisição para deletar o usuário: ${commentId}`
+  );
+
+  try {
+    const deletedId = await Comment.destroy({
+      where: {
+        id: commentId,
+      },
+    });
+
+    res.status(200).json({ message: "Comentário deletado!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro interno do servidor." });
+  }
+}
