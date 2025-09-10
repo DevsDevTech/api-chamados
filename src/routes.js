@@ -13,7 +13,9 @@ import {
   listTicket,
   patchTicket,
   updateTicket,
-  statusTickets
+  statusTickets,
+  countTickets,
+  closedTickets
 } from "./controllers/ticketsController.js";
 import {
   createComments,
@@ -39,11 +41,13 @@ usersRoute.get("/", authorize(["admin"]), listUsers);
 // TICKETS ROUTES
 ticketsRoute.post("/", authorize(["user", "admin"]), createTicket);
 ticketsRoute.get("/", authorize(["user", "admin"]), listTicket);
+ticketsRoute.get("/closed", authorize(["admin"]), closedTickets);
 ticketsRoute.get("/status", authorize(["admin"]), statusTickets);
 ticketsRoute.get("/:id", authorize(["user", "admin"]), detailTicket);
 ticketsRoute.patch("/:id", authorize(["admin"]), patchTicket);
 ticketsRoute.post("/:id/status", authorize(["admin"]), updateTicket);
 ticketsRoute.delete("/:id", authorize(["admin"]), deleteTicket);
+ticketsRoute.get("/:id/count", authorize(["admin"]), countTickets);
 
 // COMMENTS ROUTES
 ticketsRoute.get("/:ticketId/comments",authorize(["user", "admin"]),listComments);

@@ -1,4 +1,5 @@
 import db from "../models/index.cjs";
+import { Op } from "sequelize";
 
 const Ticket = db.Ticket;
 const File = db.File;
@@ -117,6 +118,11 @@ export const listTicket = async (req, res) => {
             attributes: ["name", "email"],
           },
         ],
+        where: {
+          status: {
+            [Op.in]: ["aberto", "em_andamento"],
+          },
+        },
         offset: Number(page * limit - limit),
         limit: limit,
       });
@@ -267,6 +273,67 @@ export const statusTickets = async (req, res) => {
       total: countTicket,
     };
     res.status(200).json({ tickets: statusTickets, pagination: pagination });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro, tente novamente" });
+  }
+};
+
+export const countTickets = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const tickets = await Ticket.findAll({
+      where: { createdById: userId },
+    });
+
+    res.status(200).json({ tickets: tickets });
+  } catch (error) {
+    res.status(500).json({ message: "Erro, tente novamente" });
+  }
+};
+
+export const closedTickets = async (req, res) => {
+  const userId = req.user.id;
+  const user = req.user;
+  const { page = 1 } = req.query;
+
+  const limit = 30;
+
+  let lastPage = 1;
+
+  const countTicket = await Ticket.count();
+
+  if (countTicket !== 0) {
+    lastPage = Math.ceil(countTicket / limit);
+  } else {
+    return res.status(400).json({ message: "Nenhum ticket encontrado." });
+  }
+
+  try {
+    const tickets = await Ticket.findAll({
+      order: [["created_at", "DESC"]],
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["name", "email"],
+        },
+      ],
+      where: { status: "fechado" },
+      offset: Number(page * limit - limit),
+      limit: limit,
+    });
+    let pagination = {
+      path: "/tickets",
+      page,
+      prev_page_url: page - 1 >= 1 ? page - 1 : null,
+      next_page_url:
+        Number(page) + Number(1) > lastPage ? null : Number(page) + 1,
+      lastPage,
+      total: countTicket,
+    };
+    res.status(200).json({ tickets: tickets, pagination: pagination });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro, tente novamente" });
