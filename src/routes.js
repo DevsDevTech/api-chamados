@@ -15,7 +15,8 @@ import {
   updateTicket,
   statusTickets,
   countTickets,
-  closedTickets
+  closedTickets,
+  filteredTickets
 } from "./controllers/ticketsController.js";
 import {
   createComments,
@@ -36,12 +37,13 @@ authRoute.delete("/:id/delete", authorize(["admin"]), deleteUser);
 
 // USERS ROUTES
 usersRoute.get("/me", authorize(["user", "admin"]), getUser);
-usersRoute.get("/", authorize(["admin"]), listUsers);
+usersRoute.get("/", authorize(["user", "admin"]), listUsers);
 
 // TICKETS ROUTES
 ticketsRoute.post("/", authorize(["user", "admin"]), createTicket);
 ticketsRoute.get("/", authorize(["user", "admin"]), listTicket);
 ticketsRoute.get("/closed", authorize(["admin"]), closedTickets);
+ticketsRoute.get("/filtered", authorize(["user", "admin"]), filteredTickets)
 ticketsRoute.get("/status", authorize(["admin"]), statusTickets);
 ticketsRoute.get("/:id", authorize(["user", "admin"]), detailTicket);
 ticketsRoute.patch("/:id", authorize(["admin"]), patchTicket);
@@ -52,4 +54,4 @@ ticketsRoute.get("/:id/count", authorize(["admin"]), countTickets);
 // COMMENTS ROUTES
 ticketsRoute.get("/:ticketId/comments",authorize(["user", "admin"]),listComments);
 ticketsRoute.post("/:ticketId/comments",authorize(["user", "admin"]),createComments);
-ticketsRoute.delete("/:id/comments",authorize(["user", "admin"]),deleteComment);
+ticketsRoute.delete("/:id/comments",authorize(["admin"]),deleteComment);

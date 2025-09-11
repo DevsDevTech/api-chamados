@@ -25,7 +25,7 @@ export const listUsers = async (req, res) => {
   const userId = req.user.id;
   const user = req.user;
 
-  if (user.role === "admin") {
+
     try {
       const users = await User.findAll();
       res.status(200).json({ users: users });
@@ -33,7 +33,5 @@ export const listUsers = async (req, res) => {
       console.error(err);
       res.status(500).json({ message: "Erro, tente novamente" });
     }
-  } else {
-    res.status(500).json({ message: "Permissões restritas" });
-  }
+
 };

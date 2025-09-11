@@ -10,6 +10,7 @@ export const createTicket = async (req, res) => {
     const { files } = req.body;
     const user = req.user;
 
+
     if (!req.body.title) {
       return res.status(400).json({ message: "O título é obrigatório." });
     }
@@ -31,11 +32,11 @@ export const createTicket = async (req, res) => {
     };
 
     if (
-      newTicket.status !== "aberto" &&
-      newTicket.status !== "em_andamento" &&
-      newTicket.status !== "fechado"
+      newTicket.priority !== "low" &&
+      newTicket.priority !== "medium" &&
+      newTicket.priority !== "high"
     ) {
-      res.status(400).json({ message: "Tente um status válido" });
+      return res.status(400).json({ message: "Tente uma prioridade válida" });
     }
 
     const createdTicket = await Ticket.create(newTicket);
@@ -56,7 +57,7 @@ export const createTicket = async (req, res) => {
 
     return res.status(201).json(finalTicket);
   } catch (err) {
-    console.error(err);
+    console.error("ERRO ao criar ticket:", err); 
     res.status(500).json({ message: "Erro, tente novamente" });
   }
 };
@@ -336,6 +337,59 @@ export const closedTickets = async (req, res) => {
     res.status(200).json({ tickets: tickets, pagination: pagination });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Erro, tente novamente" });
+  }
+};
+
+export const filteredTickets = async (req, res) => {
+  const { id: userId, role } = req.user;
+  
+  const { page = 1, limit = 30, selectedId, status, priority } = req.query;
+
+  const whereClause = {};
+
+  if (role === "user") {
+    whereClause.createdById = userId;
+  } else if (selectedId) {
+    whereClause.createdById = selectedId;
+  }
+  
+  if (status) {
+    whereClause.status = status;
+  }
+  if (priority) {
+    whereClause.priority = priority;
+  }
+  
+  try {
+    const { count, rows: tickets } = await Ticket.findAndCountAll({
+      where: whereClause, 
+      order: [["created_at", "DESC"]],
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["name", "email"],
+        },
+      ],
+      limit: parseInt(limit, 10),
+      offset: (parseInt(page, 10) - 1) * parseInt(limit, 10),
+    });
+
+    const lastPage = Math.ceil(count / limit) || 1;
+    const pagination = {
+        path: '/tickets',
+        page: parseInt(page, 10),
+        prev_page_url: parseInt(page, 10) > 1 ? `/tickets?page=${parseInt(page, 10) - 1}` : null,
+        next_page_url: parseInt(page, 10) < lastPage ? `/tickets?page=${parseInt(page, 10) + 1}` : null,
+        total: count,
+        lastPage
+    };
+    
+    res.status(200).json({ tickets: tickets, pagination: pagination });
+
+  } catch (err) {
+    console.error("Erro ao buscar tickets:", err);
     res.status(500).json({ message: "Erro, tente novamente" });
   }
 };

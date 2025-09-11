@@ -23,7 +23,7 @@ module.exports = {
         defaultValue: "aberto",
       },
       priority: {
-        type: Sequelize.ENUM("low", "medium", "high"),
+        type: Sequelize.ENUM.("low", "medium", "high"),
         allowNull: false,
       },
       files: {
