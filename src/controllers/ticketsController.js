@@ -1,4 +1,5 @@
 import db from "../models/index.cjs";
+import { bucket } from '../server.js'; 
 import { Op } from "sequelize";
 
 const Ticket = db.Ticket;
@@ -9,7 +10,8 @@ export const createTicket = async (req, res) => {
   try {
     const { files } = req.body;
     const user = req.user;
-
+    console.log("Conteúdo de req.files:", req.files);
+    console.log("Conteúdo de req.body:", req.body);
 
     if (!req.body.title) {
       return res.status(400).json({ message: "O título é obrigatório." });
@@ -22,11 +24,11 @@ export const createTicket = async (req, res) => {
     }
 
     const newTicket = {
+      id: req.body.id,
       title: req.body.title,
       description: req.body.description,
       status: req.body.status,
       priority: req.body.priority,
-      files: req.body.files,
       createdById: req.user.id,
       assigneeId: req.body.assigneeId,
     };
@@ -40,15 +42,52 @@ export const createTicket = async (req, res) => {
     }
 
     const createdTicket = await Ticket.create(newTicket);
+    console.log("Ticket criado com ID:", createdTicket.id);
+    const uploadedFileUrls = [];
 
-    if (files && Array.isArray(files) && files.length > 0) {
-      const filesToCreate = files.map((file) => ({
-        ...file,
-        ticketId: createdTicket.id,
-        userId: user.id,
-      }));
+    if (req.files && req.files.length > 0) {
+      console.log(`Iniciando upload para ${req.files.length} arquivo(s).`)
+      for (const file of req.files) {
+        console.log("Processando arquivo:", file.originalname)
+        const fileExtension = file.originalname.split(".").pop();
+        const fileNameInStorage = `tickets/${
+          createdTicket.id
+        }/${v4()}.${fileExtension}`;
+        const fileRef = bucket.file(fileNameInStorage);
 
-      await File.bulkCreate(filesToCreate);
+        await new Promise((resolve, reject) => {
+          const stream = fileRef.createWriteStream({
+            metadata: {
+              contentType: file.mimetype,
+            },
+          });
+
+          stream.on("error", (err) => {
+            console.error(
+              "Erro no stream de upload para o Firebase Storage:",
+              err
+            );
+            reject(err);
+          });
+
+          stream.on("finish", async () => {
+             console.log("Stream de upload finalizado para:", file.originalname)
+            await fileRef.makePublic();
+            const publicUrl = fileRef.publicUrl();
+            uploadedFileUrls.push(publicUrl);
+
+            await File.create({
+              name: file.originalname,
+              url: publicUrl,
+              ticketId: createdTicket.id,
+              userId: user.id
+            });
+            resolve();
+          });
+
+          stream.end(file.buffer);
+        });
+      }
     }
 
     const finalTicket = await Ticket.findByPk(createdTicket.id, {
@@ -57,7 +96,7 @@ export const createTicket = async (req, res) => {
 
     return res.status(201).json(finalTicket);
   } catch (err) {
-    console.error("ERRO ao criar ticket:", err); 
+    console.error("ERRO ao criar ticket:", err);
     res.status(500).json({ message: "Erro, tente novamente" });
   }
 };
@@ -343,7 +382,7 @@ export const closedTickets = async (req, res) => {
 
 export const filteredTickets = async (req, res) => {
   const { id: userId, role } = req.user;
-  
+
   const { page = 1, limit = 30, selectedId, status, priority } = req.query;
 
   const whereClause = {};
@@ -353,17 +392,17 @@ export const filteredTickets = async (req, res) => {
   } else if (selectedId) {
     whereClause.createdById = selectedId;
   }
-  
+
   if (status) {
     whereClause.status = status;
   }
   if (priority) {
     whereClause.priority = priority;
   }
-  
+
   try {
     const { count, rows: tickets } = await Ticket.findAndCountAll({
-      where: whereClause, 
+      where: whereClause,
       order: [["created_at", "DESC"]],
       include: [
         {
@@ -378,16 +417,21 @@ export const filteredTickets = async (req, res) => {
 
     const lastPage = Math.ceil(count / limit) || 1;
     const pagination = {
-        path: '/tickets',
-        page: parseInt(page, 10),
-        prev_page_url: parseInt(page, 10) > 1 ? `/tickets?page=${parseInt(page, 10) - 1}` : null,
-        next_page_url: parseInt(page, 10) < lastPage ? `/tickets?page=${parseInt(page, 10) + 1}` : null,
-        total: count,
-        lastPage
+      path: "/tickets",
+      page: parseInt(page, 10),
+      prev_page_url:
+        parseInt(page, 10) > 1
+          ? `/tickets?page=${parseInt(page, 10) - 1}`
+          : null,
+      next_page_url:
+        parseInt(page, 10) < lastPage
+          ? `/tickets?page=${parseInt(page, 10) + 1}`
+          : null,
+      total: count,
+      lastPage,
     };
-    
-    res.status(200).json({ tickets: tickets, pagination: pagination });
 
+    res.status(200).json({ tickets: tickets, pagination: pagination });
   } catch (err) {
     console.error("Erro ao buscar tickets:", err);
     res.status(500).json({ message: "Erro, tente novamente" });

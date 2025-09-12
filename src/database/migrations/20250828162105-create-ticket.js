@@ -23,15 +23,12 @@ module.exports = {
         defaultValue: "aberto",
       },
       priority: {
-        type: Sequelize.ENUM.("low", "medium", "high"),
+        type: Sequelize.ENUM("low", "medium", "high"),
         allowNull: false,
       },
       files: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
-        key: Sequelize.STRING,
-        fileSize: Sequelize.INTEGER,
-        contentType: Sequelize.STRING
+        type: Sequelize.ARRAY(Sequelize.STRING),
+        defaultValue: Sequelize.STRING,
       },
       created_by_id: {
         type: Sequelize.UUID,

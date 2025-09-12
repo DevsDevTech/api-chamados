@@ -1,43 +1,36 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-     await queryInterface.createTable('Files', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("Files", {
       id: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        defaultValue: Sequelize.UUIDV4, 
         primaryKey: true,
+        allowNull: false,
+      },
+      url: {
+        type: Sequelize.STRING,
+        defaultValue: Sequelize.STRING,
         allowNull: false,
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
-      },
-      key: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      file_size: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      content_type: {
-        type: Sequelize.STRING,
+        defaultValue: Sequelize.STRING,
         allowNull: false,
       },
       ticket_id: {
         type: Sequelize.UUID,
-        references: { model: 'Tickets', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        references: { model: "Tickets", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       comment_id: {
         type: Sequelize.UUID,
-        references: { model: 'Comments', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        references: { model: "Comments", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       user_id: {
         type: Sequelize.UUID,
@@ -60,7 +53,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable('Files');
-  }
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable("Files");
+  },
 };

@@ -10,46 +10,62 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'ticketId',
         as: 'ticket',
       });
+      this.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'user',
+      });
+      this.belongsTo(models.Comment, {
+        foreignKey: 'commentId',
+        as: 'comment',
+      });
     }
   }
 
   File.init({
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4, 
+        primaryKey: true,
+        allowNull: false,
+      },
+    url: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
+      defaultValue: DataTypes.STRING,
       allowNull: false,
-    },
-    key: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    fileSize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'file_size', 
-    },
-    contentType: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: 'content_type', 
     },
     ticketId: {
       type: DataTypes.UUID,
       field: 'ticket_id', 
+      references: {
+        model: 'Tickets', 
+        key: 'id',
+      },
+      onUpdate: 'CASCADE', 
+      onDelete: 'CASCADE',
     },
     userId: {
       type: DataTypes.UUID,
       field: 'user_id', 
+      references: {
+        model: 'Users', 
+        key: 'id',
+      },
+      onUpdate: 'CASCADE', 
+      onDelete: 'CASCADE',
     },
     commentId: {
       type: DataTypes.UUID,
       field: 'comment_id', 
+      references: {
+        model: 'Comments', 
+        key: 'id',
+      },
+      onUpdate: 'CASCADE', 
+      onDelete: 'CASCADE',
     },
   }, {
     sequelize,
