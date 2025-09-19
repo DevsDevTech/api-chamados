@@ -106,7 +106,7 @@ export const listTicket = async (req, res) => {
   const user = req.user;
   const { page = 1 } = req.query;
 
-  const limit = 30;
+  const limit = 14;
 
   let lastPage = 1;
 
@@ -383,7 +383,7 @@ export const closedTickets = async (req, res) => {
 export const filteredTickets = async (req, res) => {
   const { id: userId, role } = req.user;
 
-  const { page = 1, limit = 30, selectedId, status, priority } = req.query;
+  const { page = 1, limit = 12+1, selectedId, status, priority } = req.query;
 
   const whereClause = {};
 

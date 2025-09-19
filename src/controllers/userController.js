@@ -35,3 +35,28 @@ export const listUsers = async (req, res) => {
     }
 
 };
+
+export const editUser = async (req, res)=> {
+  const userId = req.userId;
+  const email = req.body.email;
+  const passwordHash = req.body.passwordHash;
+
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(passwordHash, salt);
+
+  try {
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    await user.update(data, {
+      fields: ["email", "passwordHash"],
+    });
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro interno do servidor." });
+  }
+};

@@ -5,7 +5,7 @@ import {
   logoutUser,
   deleteUser
 } from "./controllers/authController.js";
-import { getUser, listUsers } from "./controllers/userController.js";
+import { editUser, getUser, listUsers } from "./controllers/userController.js";
 import {
   createTicket,
   deleteTicket,
@@ -53,6 +53,7 @@ authRoute.delete("/:id/delete", authorize(["admin"]), deleteUser);
 // USERS ROUTES
 usersRoute.get("/me", authorize(["user", "admin"]), getUser);
 usersRoute.get("/", authorize(["user", "admin"]), listUsers);
+usersRoute.patch("/", authorize(["user", "admin"]), editUser);
 
 // TICKETS ROUTES
 ticketsRoute.post("/", authorize(["user", "admin"]), upload.array('files', 3), createTicket);
