@@ -53,7 +53,7 @@ authRoute.delete("/:id/delete", authorize(["admin"]), deleteUser);
 // USERS ROUTES
 usersRoute.get("/me", authorize(["user", "admin"]), getUser);
 usersRoute.get("/", authorize(["user", "admin"]), listUsers);
-usersRoute.patch("/", authorize(["user", "admin"]), editUser);
+usersRoute.patch("/:id", authorize(["user", "admin"]), editUser);
 
 // TICKETS ROUTES
 ticketsRoute.post("/", authorize(["user", "admin"]), upload.array('files', 3), createTicket);
@@ -65,7 +65,7 @@ ticketsRoute.get("/:id", authorize(["user", "admin"]), detailTicket);
 ticketsRoute.patch("/:id", authorize(["admin"]), patchTicket);
 ticketsRoute.post("/:id/status", authorize(["admin"]), updateTicket);
 ticketsRoute.delete("/:id", authorize(["admin"]), deleteTicket);
-ticketsRoute.get("/:id/count", authorize(["admin"]), countTickets);
+ticketsRoute.get("/:id/count", authorize(["user", "admin"]), countTickets);
 
 
 // COMMENTS ROUTES
