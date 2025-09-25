@@ -5,7 +5,7 @@ import {
   logoutUser,
   deleteUser
 } from "./controllers/authController.js";
-import { editUser, getUser, listUsers, editPassUser, findUserByEmail, findByEmailFB } from "./controllers/userController.js";
+import { editUser, getUser, listUsers, editPassUser, findUserByEmail, verifyPostgresToken } from "./controllers/userController.js";
 import {
   createTicket,
   deleteTicket,
@@ -53,10 +53,10 @@ authRoute.delete("/:id/delete", authorize(["admin"]), deleteUser);
 // USERS ROUTES
 usersRoute.get("/me", authorize(["user", "admin"]), getUser);
 usersRoute.get("/", authorize(["user", "admin"]), listUsers);
+usersRoute.get('/generate-firebase-token', authorize(["user", "admin"]), verifyPostgresToken)
 usersRoute.patch("/:id", editUser);
 usersRoute.post("/password", editPassUser);
 usersRoute.get("/:email", findUserByEmail);
-usersRoute.post('/check-by-email', findByEmailFB)
 
 // TICKETS ROUTES
 ticketsRoute.post("/", authorize(["user", "admin"]), upload.array('files', 3), createTicket);

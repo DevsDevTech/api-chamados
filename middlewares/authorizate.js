@@ -1,21 +1,30 @@
-
 import jwt from "jsonwebtoken";
 import db from "../src/models/index.cjs";
 const User = db.User;
-
 
 const authorize = (allowedRoles) => {
   return async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const jwt_secret = process.env.JWT_SECRET;
 
-    if (!authHeader) {
-      return res.status(401).json({ message: "Token inexistente" });
-    }
-    const parts = authHeader.split(" ");
-    const token = parts[1];
 
-    const isTokenInvalid = await db.InvalidatedToken.findOne({ where: { token }})
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "Token de autenticação ausente ou mal formatado." });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Token não encontrado após 'Bearer '." });
+    }
+
+    const isTokenInvalid = await db.InvalidatedToken.findOne({
+      where: { token },
+    });
 
     if (isTokenInvalid) {
       return res.status(401).json({ message: "Erro, Faça login novamente" });
@@ -32,14 +41,16 @@ const authorize = (allowedRoles) => {
       const user = await User.findByPk(decoded.id);
 
       if (!user) {
-        return res.status(404).json({ message: "Usuário do token não encontrado." });
+        return res
+          .status(404)
+          .json({ message: "Usuário do token não encontrado." });
       }
 
       req.user = user;
-      const userId = req.user.id
+      const userId = req.user.id;
 
       if (allowedRoles.includes(user.role)) {
-        next(); 
+        next();
       } else {
         return res.status(403).json({ message: "Permissões insuficientes." });
       }

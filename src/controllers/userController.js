@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import db from "../models/index.cjs";
 import bcrypt from "bcrypt";
-import { random } from "nanoid";
+import admin from "firebase-admin";
 import { randomInt } from "crypto";
 
 const User = db.User;
@@ -124,12 +124,10 @@ export const findUserByEmail = async (req, res) => {
       console.log(
         `Tentativa de redefinição para e-mail não cadastrado: ${email}`
       );
-      return res
-        .status(200)
-        .json({
-          message:
-            "Se uma conta com este e-mail existir, um link para redefinição de senha foi enviado.",
-        });
+      return res.status(200).json({
+        message:
+          "Se uma conta com este e-mail existir, um link para redefinição de senha foi enviado.",
+      });
     }
     console.log(`Usuário encontrado para redefinição de senha. ID: ${user.id}`);
 
@@ -142,37 +140,40 @@ export const findUserByEmail = async (req, res) => {
   }
 };
 
-export const findByEmailFB = async (req, res) => {
-  const { email, newPassword } = req.body;
+export const verifyPostgresToken = async (req, res) => {
+  const uid = req.user.dataValues.id;
+  const role = req.user.dataValues.role;
 
-  if (!email) {
-    return res.status(400).json({ message: "O e-mail é obrigatório." });
+  console.log("TESTEE", uid, role)
+
+  if (!uid || !role) {
+    return res
+      .status(400)
+      .json({ message: "Dados do usuário (ID e Role) inválidos." });
   }
 
-  try {
-    const userRecord = await admin.auth().getUserByEmail(email);
-
-    console.log(
-      `Usuário encontrado: ${userRecord.uid}, Email: ${userRecord.email}`
+  if (!uid || typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
+    console.error(
+      "ERRO CRÍTICO: O UID é inválido! Abortando a criação do token."
     );
-    admin.auth().updateUser(uid, { password: newPassword })
-
-    return res.status(200).json({
-      message: "Usuário encontrado.",
-      uid: userRecord.uid,
-    });
-  } catch (error) {
-    if (error.code === "auth/user-not-found") {
-      console.log(`E-mail não encontrado no Firebase Auth: ${email}`);
-      return res.status(404).json({ message: "Usuário não encontrado." });
-    }
-
-    console.error("Erro ao buscar usuário no Firebase:", error);
     return res
       .status(500)
-      .json({
-        message: "Ocorreu um erro ao buscar o usuário.",
-        error: error.code,
-      });
+      .json({ message: "UID do usuário inválido no backend." });
+  }
+
+  if (!uid) {
+    return res.status(400).json({ message: "ID do usuário não encontrado." });
+  }
+  try {
+    const firebaseToken = await admin
+      .auth()
+      .createCustomToken(uid, { role: role });
+
+    res.status(200).json({ firebaseToken });
+  } catch (error) {
+    console.error("Erro ao gerar token customizado do Firebase:", error);
+    res.status(500).json({
+      message: "Não foi possível obter a autorização para o storage.",
+    });
   }
 };

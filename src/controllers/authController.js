@@ -91,15 +91,13 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "1h" });
 
-    return res
-      .status(200)
-      .json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: token,
-      });
+    return res.status(200).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: token,
+    });
   } catch (err) {
     console.error(err);
 
@@ -139,11 +137,8 @@ export const logoutUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-
-  const userId = req.params.id
-  console.log(
-    `[DELETE] Recebida requisição para deletar o usuário: ${userId}`
-  );
+  const userId = req.params.id;
+  console.log(`[DELETE] Recebida requisição para deletar o usuário: ${userId}`);
 
   try {
     const deletedId = await User.destroy({
@@ -158,4 +153,3 @@ export const deleteUser = async (req, res) => {
     return res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
-
